@@ -41,16 +41,6 @@ errAbort(
   );
 }
 
-void print_str(char* str_, char* block)
-{
-	int i=0;
-	for(i=0;i<strlen(str_);i++)
-	{
-		//putc_unlocked(str_[i],out);
-		block[i] = str_[i];
-	}
-}
-
 //inspired by https://stackoverflow.com/questions/11975780/can-putchar-print-an-integer
 int print_double(unsigned long val, char* block)
 {
@@ -70,9 +60,6 @@ int print_double(unsigned long val, char* block)
 		block[(i-z)-1] = temp;
 	}
 	return i;
-	//if(val/10 != 0) print_double(val/10, block);
-        //putc_unlocked((val % 10) +'0', out);
-	//*block=(val % 10) +'0';
 }
 
 int print_line(struct perBaseWig *pbw_list, int i, FILE *outF, char* out)
@@ -93,18 +80,6 @@ int print_line(struct perBaseWig *pbw_list, int i, FILE *outF, char* out)
     }
     out[j-1]='\n';
     return j;
-    //fwrite(out,1,j,outF);
-    /*print_str(pbw_list->chrom, out);
-    putc_unlocked('\t', out);
-    print_double(pbw_list->chromStart+i, out);
-    putc_unlocked('\t', out);
-    print_double(pbw_list->chromStart+i+1, out);
-    putc_unlocked('\t', out);
-    for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
-    {
-	print_double(pbw->data[i], out);
-	putc_unlocked((pbw->next == NULL) ? '\n' : '\t',out);
-    }*/
 }
 
 boolean has_na(struct perBaseWig *pbw_list, int i)
