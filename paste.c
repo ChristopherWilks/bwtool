@@ -41,27 +41,60 @@ errAbort(
   );
 }
 
-void print_str(char* str_, FILE *out)
+void print_str(char* str_, char* block)
 {
 	int i=0;
 	for(i=0;i<strlen(str_);i++)
 	{
-		putc_unlocked(str_[i],out);
+		//putc_unlocked(str_[i],out);
+		block[i] = str_[i];
 	}
 }
 
 //inspired by https://stackoverflow.com/questions/11975780/can-putchar-print-an-integer
-void print_double(unsigned long val, FILE *out)
+int print_double(unsigned long val, char* block)
 {
-        if(val/10 != 0) print_double(val/10, out);
-        putc_unlocked((val % 10) +'0', out);
+	int i = 0;
+	unsigned long j = val;
+	while(j/10 != 0)
+	{
+		block[i++]=(j % 10) +'0';
+		j = j/10;
+	}
+	block[i++]=(j % 10) +'0';
+	int z;
+	for(z=0;z<i/2;z++)
+	{
+		char temp = block[z];
+		block[z] = block[(i-z)-1];
+		block[(i-z)-1] = temp;
+	}
+	return i;
+	//if(val/10 != 0) print_double(val/10, block);
+        //putc_unlocked((val % 10) +'0', out);
+	//*block=(val % 10) +'0';
 }
 
-void print_line(struct perBaseWig *pbw_list, struct slDouble *c_list, int decimals, enum wigOutType wot, int i, FILE *out)
+int print_line(struct perBaseWig *pbw_list, int i, FILE *outF, char* out)
 {
     struct perBaseWig *pbw;
     struct slDouble *c;
-    print_str(pbw_list->chrom, out);
+    int j = strlen(pbw_list->chrom);
+    memcpy(out,pbw_list->chrom,j);
+    out[j++]='\t';
+    j+=print_double(pbw_list->chromStart+i, &out[j]);
+    out[j++]='\t';
+    j+=print_double(pbw_list->chromStart+i+1, &out[j]);
+    out[j++]='\t';
+    for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
+    {
+	j+=print_double(pbw->data[i], &out[j]);
+    	out[j++]='\t';
+    }
+    out[j-1]='\n';
+    return j;
+    //fwrite(out,1,j,outF);
+    /*print_str(pbw_list->chrom, out);
     putc_unlocked('\t', out);
     print_double(pbw_list->chromStart+i, out);
     putc_unlocked('\t', out);
@@ -71,7 +104,7 @@ void print_line(struct perBaseWig *pbw_list, struct slDouble *c_list, int decima
     {
 	print_double(pbw->data[i], out);
 	putc_unlocked((pbw->next == NULL) ? '\n' : '\t',out);
-    }
+    }*/
 }
 
 boolean has_na(struct perBaseWig *pbw_list, int i)
@@ -92,30 +125,19 @@ boolean has_under(struct perBaseWig *pbw_list, int i, double m)
     return FALSE;
 }
 
-void output_pbws(struct perBaseWig *pbw_list, struct slDouble *c_list, int decimals, enum wigOutType wot, boolean skip_NA, boolean skip_min, double min, FILE *out)
+void output_pbws(struct perBaseWig *pbw_list, struct slDouble *c_list, int decimals, enum wigOutType wot, boolean skip_NA, boolean skip_min, double min, FILE *out, char* block)
 /* outputs one set of perBaseWigs all at the same section */
 {
     struct perBaseWig *pbw;
     if (pbw_list)
     {
-	boolean last_skipped = TRUE;
 	int i = 0;
-	int last_printed = -2;
+	long j = 0;
 	for (i = 0; i < pbw_list->len; i++)
 	{
-	    if ((!skip_NA || !has_na(pbw_list, i)) && (!skip_min || !has_under(pbw_list, i, min)))
-	    {
-		if (i - last_printed > 1)
-		{
-		    if (wot == varStepOut)
-			fprintf(out, "variableStep chrom=%s span=1\n", pbw_list->chrom);
-		    else if (wot == fixStepOut)
-			fprintf(out, "fixedStep chrom=%s start=%d step=1 span=1\n", pbw_list->chrom, pbw_list->chromStart+i+1);
-		}
-		print_line(pbw_list, c_list, decimals, wot, i, out);
-		last_printed = i;
-	    }
+	    j+=print_line(pbw_list, i, out, &block[j]);
 	}
+    	fwrite(block,1,j,out);
     }
 }
 
@@ -172,6 +194,7 @@ void bwtool_paste(struct hash *options, char *favorites, char *regions, unsigned
     struct slName *files = *p_files;
     FILE *out = (output_file) ? mustOpen(output_file, "w") : stdout;
     /* open the files one by one */
+    int num_files = slCount(files);
     if (slCount(files) == 1)
 	check_for_list_files(&files, &labels, 0);
     for (file = files; file != NULL; file = file->next)
@@ -226,6 +249,10 @@ void bwtool_paste(struct hash *options, char *favorites, char *regions, unsigned
 	}
 	printf("\n");
     }
+    //one massive pre-allocated region matrix array
+    //region_size * (6 bytes for chrom+tab,10 bytes for start+tab,10 bytes for end+tab,num_files*9 bytes (999M count + tab/newline))
+    long block_size = 10457000000;
+    //long block_size = 10457;
     for (bed = mb_list->sections; bed != NULL; bed = bed->next)
     {
 	struct perBaseWig *pbw_list = NULL;
@@ -242,7 +269,8 @@ void bwtool_paste(struct hash *options, char *favorites, char *regions, unsigned
 	    slAddHead(&pbw_list, pbw);
 	}
 	slReverse(&pbw_list);
-	output_pbws(pbw_list, c_list, decimals, wot, skip_na, skip_min, min, out);
+    	char* block = calloc(block_size,1);
+	output_pbws(pbw_list, c_list, decimals, wot, skip_na, skip_min, min, out, block);
 	perBaseWigFreeList(&pbw_list);
     }
     /* close the files */
