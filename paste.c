@@ -224,10 +224,16 @@ void bwtool_paste(struct hash *options, char *favorites, char *regions, unsigned
 	}
 	printf("\n");
     }
+
+    bed = mb_list->sections;
+    long region_span = bed->chromEnd;
     //one massive pre-allocated region matrix array
     //region_size * (6 bytes for chrom+tab,10 bytes for start+tab,10 bytes for end+tab,num_files*9 bytes (999M count + tab/newline))
-    long block_size = 10457000000;
+    long block_size = region_span*(26+(num_files*9));
+    char* block = calloc(block_size,1);
+    //long block_size = 10457000000;
     //long block_size = 10457;
+    //printf("size of block %lu,num files %d, num sections %d, region span %lu\n",block_size,num_files,num_sections,region_span);
     for (bed = mb_list->sections; bed != NULL; bed = bed->next)
     {
 	struct perBaseWig *pbw_list = NULL;
@@ -244,7 +250,6 @@ void bwtool_paste(struct hash *options, char *favorites, char *regions, unsigned
 	    slAddHead(&pbw_list, pbw);
 	}
 	slReverse(&pbw_list);
-    	char* block = calloc(block_size,1);
 	output_pbws(pbw_list, c_list, decimals, wot, skip_na, skip_min, min, out, block);
 	perBaseWigFreeList(&pbw_list);
     }
