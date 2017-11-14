@@ -57,7 +57,7 @@ void print_double(unsigned long val, FILE *out)
         putc_unlocked((val % 10) +'0', out);
 }
 
-void print_line(struct perBaseWig *pbw_list, struct slDouble *c_list, int decimals, enum wigOutType wot, int i, FILE *out)
+void print_line(struct perBaseWig *pbw_list, int i, FILE *out)
 {
     struct perBaseWig *pbw;
     struct slDouble *c;
@@ -98,23 +98,10 @@ void output_pbws(struct perBaseWig *pbw_list, struct slDouble *c_list, int decim
     struct perBaseWig *pbw;
     if (pbw_list)
     {
-	boolean last_skipped = TRUE;
 	int i = 0;
-	int last_printed = -2;
 	for (i = 0; i < pbw_list->len; i++)
 	{
-	    if ((!skip_NA || !has_na(pbw_list, i)) && (!skip_min || !has_under(pbw_list, i, min)))
-	    {
-		if (i - last_printed > 1)
-		{
-		    if (wot == varStepOut)
-			fprintf(out, "variableStep chrom=%s span=1\n", pbw_list->chrom);
-		    else if (wot == fixStepOut)
-			fprintf(out, "fixedStep chrom=%s start=%d step=1 span=1\n", pbw_list->chrom, pbw_list->chromStart+i+1);
-		}
-		print_line(pbw_list, c_list, decimals, wot, i, out);
-		last_printed = i;
-	    }
+		print_line(pbw_list, i, out);
 	}
     }
 }
