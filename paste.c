@@ -61,30 +61,17 @@ void print_line(struct perBaseWig *pbw_list, struct slDouble *c_list, int decima
 {
     struct perBaseWig *pbw;
     struct slDouble *c;
-    if (wot == bedGraphOut)
-    {	
-	print_str(pbw_list->chrom, out);
-	putc_unlocked('\t', out);
-	print_double(pbw_list->chromStart+i, out);
-	putc_unlocked('\t', out);
-	print_double(pbw_list->chromStart+i+1, out);
-	putc_unlocked('\t', out);
-    }
-    else if (wot == varStepOut)
-    {
-	print_double(pbw_list->chromStart+i+1, out);
-	putc_unlocked('\t', out);
-    }
+    print_str(pbw_list->chrom, out);
+    putc_unlocked('\t', out);
+    print_double(pbw_list->chromStart+i, out);
+    putc_unlocked('\t', out);
+    print_double(pbw_list->chromStart+i+1, out);
+    putc_unlocked('\t', out);
     for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
     {
-	if (isnan(pbw->data[i]))
-	    print_str("NA", out);
-	else
-	    print_double(pbw->data[i], out);
-	putc_unlocked((c_list == NULL) && (pbw->next == NULL) ? '\n' : '\t',out);
+	print_double(pbw->data[i], out);
+	putc_unlocked((pbw->next == NULL) ? '\n' : '\t',out);
     }
-    for (c = c_list; c != NULL; c = c->next)
-	fprintf(out, "%0.*f%c", decimals, c->val, (c->next == NULL) ? '\n' : '\t');
 }
 
 boolean has_na(struct perBaseWig *pbw_list, int i)
