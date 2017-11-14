@@ -4,6 +4,7 @@
 #include "config.h"
 #endif
 
+#include <stdio.h>
 #include <jkweb/common.h>
 #include <jkweb/obscure.h>
 #include <jkweb/linefile.h>
@@ -40,21 +41,46 @@ errAbort(
   );
 }
 
+void print_str(char* str_, FILE *out)
+{
+	int i=0;
+	for(i=0;i<strlen(str_);i++)
+	{
+		putc_unlocked(str_[i],out);
+	}
+}
+
+//inspired by https://stackoverflow.com/questions/11975780/can-putchar-print-an-integer
+void print_double(unsigned long val, FILE *out)
+{
+        if(val/10 != 0) print_double(val/10, out);
+        putc_unlocked((val % 10) +'0', out);
+}
+
 void print_line(struct perBaseWig *pbw_list, struct slDouble *c_list, int decimals, enum wigOutType wot, int i, FILE *out)
 {
     struct perBaseWig *pbw;
     struct slDouble *c;
-    if (wot == bedGraphOut)
-	fprintf(out, "%s\t%d\t%d\t", pbw_list->chrom, pbw_list->chromStart+i, pbw_list->chromStart+i+1);
-    else if (wot == varStepOut)
-	fprintf(out, "%d\t", pbw_list->chromStart+i+1);
+    //if (wot == bedGraphOut)
+    	//fprintf(out, "%s\t%d\t%d\t", pbw_list->chrom, pbw_list->chromStart+i, pbw_list->chromStart+i+1);
+	print_str(pbw_list->chrom, out);
+	putc_unlocked('\t', out);
+	print_double(pbw_list->chromStart+i, out);
+	putc_unlocked('\t', out);
+	print_double(pbw_list->chromStart+i+1, out);
+	putc_unlocked('\t', out);
+
+    /*else if (wot == varStepOut)
+	fprintf(out, "%d\t", pbw_list->chromStart+i+1);*/
     for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
     {
 	if (isnan(pbw->data[i]))
 	    fprintf(out, "NA");
 	else
-	    fprintf(out, "%0.*f", decimals, pbw->data[i]);
-	fprintf(out, "%c", (c_list == NULL) && (pbw->next == NULL) ? '\n' : '\t');
+	    //fprintf(out, "%0.*f", decimals, pbw->data[i]);
+	    print_double(pbw->data[i], out);
+	//fprintf(out, "%c", (c_list == NULL) && (pbw->next == NULL) ? '\n' : '\t');
+	putc_unlocked((c_list == NULL) && (pbw->next == NULL) ? '\n' : '\t',out);
     }
     for (c = c_list; c != NULL; c = c->next)
 	fprintf(out, "%0.*f%c", decimals, c->val, (c->next == NULL) ? '\n' : '\t');
