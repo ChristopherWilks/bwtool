@@ -57,23 +57,6 @@ void print_double(unsigned long val, FILE *out)
         putc_unlocked((val % 10) +'0', out);
 }
 
-void print_line(struct perBaseWig *pbw_list, int i, FILE *out)
-{
-    struct perBaseWig *pbw;
-    struct slDouble *c;
-    print_str(pbw_list->chrom, out);
-    putc_unlocked('\t', out);
-    print_double(pbw_list->chromStart+i, out);
-    putc_unlocked('\t', out);
-    print_double(pbw_list->chromStart+i+1, out);
-    putc_unlocked('\t', out);
-    for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
-    {
-	print_double(pbw->data[i], out);
-	putc_unlocked((pbw->next == NULL) ? '\n' : '\t',out);
-    }
-}
-
 boolean has_na(struct perBaseWig *pbw_list, int i)
 {
     struct perBaseWig *pbw;
@@ -98,11 +81,26 @@ void output_pbws(struct perBaseWig *pbw_list, struct slDouble *c_list, int decim
     struct perBaseWig *pbw;
     if (pbw_list)
     {
-	int i = 0;
-	for (i = 0; i < pbw_list->len; i++)
-	{
-		print_line(pbw_list, i, out);
-	}
+	    int i = 0;
+        struct perBaseWig *pbw;
+        struct slDouble *c;
+        for (i = 0; i < pbw_list->len; i++)
+        {
+            print_str(pbw_list->chrom, out);
+            putc_unlocked('\t', out);
+            print_double(pbw_list->chromStart+i, out);
+            putc_unlocked('\t', out);
+            print_double(pbw_list->chromStart+i+1, out);
+            for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
+            {
+                putc_unlocked('\t', out);
+                if(pbw->data[i] < 10)
+                    putc_unlocked(pbw->data[i]+'0', out);
+                else
+                    print_double(pbw->data[i], out);
+            }
+            putc_unlocked('\n',out);
+        }
     }
 }
 
