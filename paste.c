@@ -64,22 +64,7 @@ int print_double(unsigned long val, char* block)
 
 int print_line(struct perBaseWig *pbw_list, int i, FILE *outF, char* out)
 {
-    struct perBaseWig *pbw;
-    struct slDouble *c;
-    int j = strlen(pbw_list->chrom);
-    memcpy(out,pbw_list->chrom,j);
-    out[j++]='\t';
-    j+=print_double(pbw_list->chromStart+i, &out[j]);
-    out[j++]='\t';
-    j+=print_double(pbw_list->chromStart+i+1, &out[j]);
-    out[j++]='\t';
-    for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
-    {
-	j+=print_double(pbw->data[i], &out[j]);
-    	out[j++]='\t';
-    }
-    out[j-1]='\n';
-    return j;
+    return;
 }
 
 boolean has_na(struct perBaseWig *pbw_list, int i)
@@ -100,7 +85,7 @@ boolean has_under(struct perBaseWig *pbw_list, int i, double m)
     return FALSE;
 }
 
-void output_pbws(struct perBaseWig *pbw_list, struct slDouble *c_list, int decimals, enum wigOutType wot, boolean skip_NA, boolean skip_min, double min, FILE *out, char* block)
+void output_pbws(struct perBaseWig *pbw_list, struct slDouble *c_list, int decimals, enum wigOutType wot, boolean skip_NA, boolean skip_min, double min, FILE *outF, char* out)
 /* outputs one set of perBaseWigs all at the same section */
 {
     struct perBaseWig *pbw;
@@ -108,11 +93,30 @@ void output_pbws(struct perBaseWig *pbw_list, struct slDouble *c_list, int decim
     {
 	int i = 0;
 	long j = 0;
+    struct perBaseWig *pbw;
+    struct slDouble *c;
+    int z =0;
 	for (i = 0; i < pbw_list->len; i++)
 	{
-	    j+=print_line(pbw_list, i, out, &block[j]);
+	    //j+=print_line(pbw_list, i, out, &block[j]);
+            z = strlen(pbw_list->chrom);
+            memcpy(out,pbw_list->chrom,z);
+            j+=z;
+            out[j++]='\t';
+            j+=print_double(pbw_list->chromStart+i, &out[j]);
+            out[j++]='\t';
+            j+=print_double(pbw_list->chromStart+i+1, &out[j]);
+            for (pbw = pbw_list; pbw != NULL; pbw = pbw->next)
+            {
+                out[j++]='\t';
+                if(pbw->data[i] < 10)
+                    out[j++]=pbw->data[i]+'0';
+                else
+                    j+=print_double(pbw->data[i], &out[j]);
+            }
+            out[j-1]='\n';
 	}
-    	fwrite(block,1,j,out);
+    	fwrite(out,1,j,outF);
     }
 }
 
@@ -168,6 +172,7 @@ void bwtool_paste(struct hash *options, char *favorites, char *regions, unsigned
     struct slName *labels = NULL;
     struct slName *files = *p_files;
     FILE *out = (output_file) ? mustOpen(output_file, "w") : stdout;
+    setvbuf ( out , NULL , _IONBF , 1 );
     /* open the files one by one */
     int num_files = slCount(files);
     if (slCount(files) == 1)
