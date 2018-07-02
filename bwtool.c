@@ -240,6 +240,24 @@ else if (sameString(argv[1], "paste"))
 	bwtool_paste(options, favorites, regions, decimals, fill, wot, &list, tmp_dir, output_file);
     }
 }
+else if (sameString(argv[1], "msum"))
+{
+    if (argc < 3)
+	usage_msum();
+    else
+    {
+	struct slName *list = NULL;
+	int i;
+	for (i = 2; i < argc; i++)
+	{
+	    struct slName *name = slNameNew(argv[i]);
+	    slAddHead(&list, name);
+	}
+	slReverse(&list);
+    //assumes WOT is bedGraph
+	bwtool_msum(options, regions, fill, &list, tmp_dir, output_file);
+    }
+}
 else if (sameString(argv[1], "lift"))
 {
     if (argc != 5)

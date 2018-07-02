@@ -69,6 +69,9 @@ void usage_lift();
 void usage_paste();
 /* Explain usage of paste program and exit. */
 
+void usage_msum();
+/* Explain usage of msum program and exit. */
+
 void usage_window();
 /* Explain usage of the window-tiling program and exit */
 
@@ -142,6 +145,10 @@ void bwtool_lift(struct hash *options, char *favorites, char *regions, unsigned 
 void bwtool_paste(struct hash *options, char *favorites, char *regions, unsigned decimals, double fill,
 		  enum wigOutType wot, struct slName **p_files, char *tmp_dir, char *output_file);
 /* bwtool_paste - main for paste program */
+
+void bwtool_msum(struct hash *options, char *regions, double fill,
+		  struct slName **p_files, char *tmp_dir, char *output_file);
+/* bwtool_msum - main for msum program */
 
 void bwtool_window(struct hash *options, char *favorites, char *regions, unsigned decimals, double fill,
                    char *size_s, char *bigfile, char *tmp_dir, char *outputfile);

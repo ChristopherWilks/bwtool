@@ -103,7 +103,7 @@ am_bwtool_OBJECTS = aggregate.$(OBJEXT) bwtool.$(OBJEXT) \
 	extract.$(OBJEXT) fill.$(OBJEXT) find.$(OBJEXT) lift.$(OBJEXT) \
 	matrix.$(OBJEXT) paste.$(OBJEXT) rand.$(OBJEXT) \
 	remove.$(OBJEXT) roll.$(OBJEXT) sax.$(OBJEXT) shift.$(OBJEXT) \
-	split.$(OBJEXT) summarize.$(OBJEXT) window.$(OBJEXT)
+	split.$(OBJEXT) summarize.$(OBJEXT) window.$(OBJEXT) msum.$(OBJEXT)
 bwtool_OBJECTS = $(am_bwtool_OBJECTS)
 bwtool_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -345,7 +345,8 @@ bwtool_SOURCES = \
 	shift.c \
 	split.c \
 	summarize.c \
-	window.c
+	window.c \
+	msum.c
 
 SUBDIRS = tests
 all: config.h
@@ -474,6 +475,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/split.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/summarize.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/window.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/msum.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

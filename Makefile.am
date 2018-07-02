@@ -20,6 +20,7 @@ bwtool_SOURCES = \
 	shift.c \
 	split.c \
 	summarize.c \
-	window.c
+	window.c \
+	msum.c
 
 SUBDIRS = tests
