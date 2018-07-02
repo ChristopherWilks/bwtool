@@ -24,7 +24,7 @@ void usage_msum()
     errAbort(
       "bwtool msum - output sum of same regions over multiple bigWigs\n"
       "usage:\n"
-      "   bwtool msum input1.bw input2.bw input3.bw ...\n"
+      "   bwtool msum -o=output.bw input1.bw input2.bw input3.bw ...\n NOTE: assumes all input BigWigs share same chromosome sizes!"
       );
     }
 
@@ -95,10 +95,10 @@ void bwtool_msum(struct hash *options, char *regions, double fill,
     boolean verbose = (hashFindVal(options, "verbose") != NULL) ? TRUE : FALSE;
     struct slName *labels = NULL;
     struct slName *files = *p_files;
-    FILE *out = (output_file) ? mustOpen(output_file, "w") : stdout;
-    /*char wigfile[512];
+    //FILE *out = (output_file) ? mustOpen(output_file, "w") : stdout;
+    char wigfile[512];
     safef(wigfile, sizeof(wigfile), "%s.tmp.wig", output_file);
-    FILE *out = mustOpen(wigfile, "w");*/
+    FILE *out = mustOpen(wigfile, "w");
 
     /* open the files one by one */
     if (slCount(files) == 1)
@@ -110,6 +110,8 @@ void bwtool_msum(struct hash *options, char *regions, double fill,
     }
     slReverse(&mb_list);
     num_sections = slCount(mb_list->sections);
+    //for writing out the final BigWig file of all sums
+    struct hash *chromSizeHash = NULL;
     for (bed = mb_list->sections; bed != NULL; bed = bed->next)
     {
         struct perBaseWig *pbw_list = NULL;
@@ -124,6 +126,8 @@ void bwtool_msum(struct hash *options, char *regions, double fill,
             if (!pbw)
                 pbw = alloc_perBaseWig(bed->chrom, bed->chromStart, bed->chromEnd);
             slAddHead(&pbw_list, pbw);
+            //assumes that all input BigWigs share the same chromSizeHash
+            chromSizeHash = mb->chromSizeHash;
         }
         slReverse(&pbw_list);
         output_pbws_sums(pbw_list, out);
@@ -132,7 +136,8 @@ void bwtool_msum(struct hash *options, char *regions, double fill,
     /* close the files */
     carefulClose(&out);
     //now convert output to BigWig
-    //writeBw(wigfile, output_file, mb->chromSizeHash);
+    writeBw(wigfile, output_file, chromSizeHash);
+    remove(wigfile);
     while ((mb = slPopHead(&mb_list)) != NULL)
         metaBigClose(&mb);
     slNameFreeList(p_files);
