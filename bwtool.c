@@ -242,7 +242,7 @@ else if (sameString(argv[1], "paste"))
 }
 else if (sameString(argv[1], "msum"))
 {
-    if (argc < 5)
+    if (argc < 3)
 	usage_msum();
     else
     {
